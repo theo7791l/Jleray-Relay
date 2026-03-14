@@ -4,146 +4,252 @@
 
 {% block head %}
 <style>
-  .hero { margin-bottom: 2.5rem; }
+  .hero { margin-bottom: 2rem; }
   .hero h1 {
     font-size: 2rem; font-weight: 800;
     background: linear-gradient(135deg, #e8e8f0, #8888aa);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
   }
-  .hero p { color: var(--text-muted); font-size: 0.95rem; }
-  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
+  .hero p { color: var(--text-muted); font-size: 0.9rem; }
+  .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
   .stat-card {
     background: var(--card); border: 1px solid var(--border);
     border-radius: 14px; padding: 1.2rem 1.5rem;
     display: flex; align-items: center; gap: 1rem;
-    transition: all 0.3s;
+    transition: all 0.3s; cursor: default;
   }
-  .stat-card:hover { border-color: rgba(108,99,255,0.4); transform: translateY(-2px); }
+  .stat-card:hover { border-color: rgba(108,99,255,0.4); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
   .stat-icon { font-size: 2rem; }
-  .stat-val { font-size: 1.8rem; font-weight: 800; color: var(--accent); }
-  .stat-label { font-size: 0.8rem; color: var(--text-muted); margin-top: 0.1rem; }
-  .section-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 1rem;
-  }
-  .section-title { font-size: 1.1rem; font-weight: 700; }
+  .stat-val { font-size: 1.8rem; font-weight: 800; color: var(--accent); line-height: 1; }
+  .stat-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; }
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .section-title { font-size: 1.05rem; font-weight: 700; }
   .add-form {
     background: var(--card); border: 1px solid var(--border);
     border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem;
+    transition: border-color 0.3s;
   }
-  .add-form h3 { margin-bottom: 1rem; font-size: 1rem; color: var(--text-muted); font-weight: 600; }
+  .add-form:focus-within { border-color: rgba(108,99,255,0.4); }
+  .add-form h3 { margin-bottom: 1rem; font-size: 0.95rem; color: var(--text-muted); font-weight: 600; display:flex; align-items:center; gap:0.5rem; }
   .form-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.8rem; align-items: end; }
   .routes-list { display: flex; flex-direction: column; gap: 0.75rem; }
   .route-item {
     background: var(--card); border: 1px solid var(--border);
-    border-radius: 14px; padding: 1.1rem 1.5rem;
+    border-radius: 14px; padding: 1rem 1.5rem;
     display: flex; align-items: center; gap: 1rem;
-    animation: fadeIn 0.4s ease both;
     transition: all 0.25s;
+    animation: fadeIn 0.35s ease both;
   }
-  .route-item:hover { border-color: rgba(108,99,255,0.3); background: rgba(22,33,62,0.8); }
+  .route-item:hover { border-color: rgba(108,99,255,0.3); background: rgba(22,33,62,0.9); transform: translateX(4px); }
   .route-domain {
-    font-weight: 700; font-size: 0.95rem;
+    font-weight: 700; font-size: 0.92rem;
     background: linear-gradient(135deg, var(--accent3), var(--accent));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    min-width: 180px;
   }
-  .route-arrow { color: var(--text-muted); font-size: 1.2rem; }
-  .route-backend { font-family: monospace; font-size: 0.88rem; color: var(--text-muted); flex: 1; }
+  .route-arrow { color: var(--text-muted); flex-shrink: 0; }
+  .route-backend { font-family: 'Courier New', monospace; font-size: 0.85rem; color: var(--text-muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .route-hits { font-size: 0.78rem; color: var(--warning); background: rgba(255,215,64,0.1); border: 1px solid rgba(255,215,64,0.2); border-radius: 999px; padding: 0.2rem 0.6rem; white-space: nowrap; }
+  .status-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .status-dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
+  .status-dot.offline { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
+  .status-dot.checking { background: var(--warning); animation: pulse 1s infinite; }
+  .latency { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; }
   .empty-state {
     text-align: center; padding: 3rem;
-    background: var(--card); border: 1px dashed var(--border);
+    background: var(--card); border: 2px dashed var(--border);
     border-radius: 16px; color: var(--text-muted);
   }
   .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+  .refresh-btn {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.4rem 0.9rem; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--bg3);
+    color: var(--text-muted); font-size: 0.8rem; cursor: pointer;
+    transition: all 0.2s; font-family: inherit;
+  }
+  .refresh-btn:hover { color: var(--accent); border-color: var(--accent); }
+  .refresh-btn.spinning .icon { animation: spin 0.8s linear infinite; display: inline-block; }
+  .toast {
+    position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 0.8rem 1.2rem;
+    font-size: 0.88rem; font-weight: 500;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+    transform: translateY(100px); opacity: 0;
+    transition: all 0.35s cubic-bezier(0.22,1,0.36,1);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--success); color: var(--success); }
+  .toast.error { border-color: var(--danger); color: var(--danger); }
   @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
+  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="hero animate-in">
-  <h1>Dashboard</h1>
-  <p>Gérez vos routes de redirection depuis un seul endroit.</p>
+  <h1>🔀 Dashboard</h1>
+  <p>Gérez vos routes en temps réel. Les statuts sont vérifiés à chaque chargement.</p>
 </div>
 
 <div class="stats-row">
-  <div class="stat-card animate-in" style="animation-delay:0.1s">
+  <div class="stat-card animate-in" style="animation-delay:0.05s">
     <div class="stat-icon">🔀</div>
     <div>
-      <div class="stat-val">{{ count }}</div>
+      <div class="stat-val" id="stat-routes">{{ count }}</div>
       <div class="stat-label">Routes actives</div>
     </div>
   </div>
-  <div class="stat-card animate-in" style="animation-delay:0.15s">
-    <div class="stat-icon">⚡</div>
+  <div class="stat-card animate-in" style="animation-delay:0.1s">
+    <div class="stat-icon">📊</div>
     <div>
-      <div class="stat-val" style="color: var(--success)">EN LIGNE</div>
-      <div class="stat-label">Statut du relay</div>
+      <div class="stat-val" id="stat-reqs" style="color:var(--accent3)">{{ total_requests }}</div>
+      <div class="stat-label">Requêtes proxifiées</div>
     </div>
+  </div>
+  <div class="stat-card animate-in" style="animation-delay:0.15s">
+    <div class="stat-icon">🟢</div>
+    <div>
+      <div class="stat-val" id="stat-online" style="color:var(--success)">
+        {{ statuses.values()|selectattr('online')|list|length }}
+      </div>
+      <div class="stat-label">Backends en ligne</div>
+    </div>
+  </div>
+  <div class="stat-card animate-in" style="animation-delay:0.2s">
+    <a href="/admin/logs" style="text-decoration:none;display:contents">
+    <div class="stat-icon">📋</div>
+    <div>
+      <div class="stat-val" style="color:var(--warning)">LOGS</div>
+      <div class="stat-label">Voir les requêtes</div>
+    </div>
+    </a>
   </div>
 </div>
 
-<div class="add-form animate-in" style="animation-delay:0.2s">
+<div class="add-form animate-in" style="animation-delay:0.25s">
   <h3>➕ Assigner un nouveau domaine</h3>
   <form method="POST" action="/admin/routes/add">
     <div class="form-row">
       <div class="form-group">
         <label>Nom de domaine</label>
-        <input type="text" name="domain" placeholder="ex: test1.awlor.online" required />
+        <input type="text" name="domain" placeholder="ex: test1.awlor.online" required autocomplete="off" />
       </div>
       <div class="form-group">
-        <label>Backend (IP:Port)</label>
-        <input type="text" name="backend" placeholder="ex: http://12.34.56.78:8080" required />
+        <label>Backend cible (URL complète)</label>
+        <input type="text" name="backend" placeholder="ex: http://12.34.56.78:8080" required autocomplete="off" />
       </div>
-      <button type="submit" class="btn btn-primary">Assigner</button>
+      <button type="submit" class="btn btn-primary">⚡ Assigner</button>
     </div>
   </form>
 </div>
 
-<div>
+<div class="animate-in" style="animation-delay:0.3s">
   <div class="section-header">
     <span class="section-title">Routes configurées</span>
-    <span class="badge badge-active">{{ count }} active{{ 's' if count > 1 else '' }}</span>
+    <div style="display:flex;gap:0.5rem;align-items:center">
+      <span class="badge badge-active">{{ count }} route{{ 's' if count > 1 else '' }}</span>
+      <button class="refresh-btn" onclick="refreshStatus()" id="refreshBtn">
+        <span class="icon">🔄</span> Actualiser statuts
+      </button>
+    </div>
   </div>
+
   {% if routes %}
-  <div class="routes-list">
+  <div class="routes-list" id="routesList">
     {% for domain, backend in routes.items() %}
-    <div class="route-item" style="animation-delay: {{ loop.index * 0.05 }}s">
-      <span class="badge badge-active">🟢</span>
+    {% set s = statuses.get(domain, {}) %}
+    <div class="route-item" id="route-{{ loop.index }}" style="animation-delay:{{ loop.index * 0.06 }}s">
+      <div class="status-dot {{ 'online' if s.get('online') else 'offline' }}" id="dot-{{ domain|replace('.','_') }}"></div>
       <span class="route-domain">{{ domain }}</span>
       <span class="route-arrow">→</span>
-      <span class="route-backend">{{ backend }}</span>
-      <form method="POST" action="/admin/routes/delete" style="margin-left:auto">
+      <span class="route-backend" title="{{ backend }}">{{ backend }}</span>
+      {% if hits.get(domain) %}
+      <span class="route-hits">⚡ {{ hits[domain] }} hits</span>
+      {% endif %}
+      <span class="latency" id="lat-{{ domain|replace('.','_') }}"
+        style="color: {{ 'var(--success)' if s.get('online') else 'var(--danger)' }}">
+        {% if s.get('online') %}{{ s.get('latency_ms', '?') }}ms{% else %}offline{% endif %}
+      </span>
+      <form method="POST" action="/admin/routes/delete" style="margin-left:0.5rem">
         <input type="hidden" name="domain" value="{{ domain }}" />
-        <button type="submit" class="btn btn-danger" onclick="return confirm('Supprimer cette route ?')">🗑 Supprimer</button>
+        <button type="submit" class="btn btn-danger" onclick="return confirm('Supprimer cette route ?')" style="padding:0.4rem 0.8rem;font-size:0.82rem">🗑</button>
       </form>
     </div>
     {% endfor %}
   </div>
   {% else %}
-  <div class="empty-state animate-in">
+  <div class="empty-state">
     <div class="icon">🌐</div>
-    <p style="font-weight:600; margin-bottom:0.5rem">Aucune route configurée</p>
-    <p style="font-size:0.85rem">Ajoutez votre premier domaine ci-dessus.</p>
+    <p style="font-weight:600;margin-bottom:0.4rem">Aucune route configurée</p>
+    <p style="font-size:0.85rem">Ajoutez votre premier domaine ci-dessus pour commencer.</p>
   </div>
   {% endif %}
 </div>
+
+<div id="toast" class="toast"></div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  // Animate stat counter
+  // Animate counters on load
   document.querySelectorAll('.stat-val').forEach(el => {
     const target = parseInt(el.textContent);
-    if (!isNaN(target)) {
+    if (!isNaN(target) && target > 0) {
       let current = 0;
-      const step = Math.ceil(target / 20);
       const timer = setInterval(() => {
-        current = Math.min(current + step, target);
+        current = Math.min(current + Math.ceil(target / 15), target);
         el.textContent = current;
         if (current >= target) clearInterval(timer);
       }, 40);
     }
   });
+
+  function showToast(msg, type = 'success') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => t.className = 'toast', 3000);
+  }
+
+  async function refreshStatus() {
+    const btn = document.getElementById('refreshBtn');
+    btn.classList.add('spinning');
+    btn.disabled = true;
+    try {
+      const res = await fetch('/admin/api/status');
+      const data = await res.json();
+      let onlineCount = 0;
+      for (const [domain, status] of Object.entries(data.statuses)) {
+        const key = domain.replace(/\./g, '_');
+        const dot = document.getElementById(`dot-${key}`);
+        const lat = document.getElementById(`lat-${key}`);
+        if (dot) {
+          dot.className = `status-dot ${status.online ? 'online' : 'offline'}`;
+        }
+        if (lat) {
+          lat.style.color = status.online ? 'var(--success)' : 'var(--danger)';
+          lat.textContent = status.online ? `${status.latency_ms}ms` : 'offline';
+        }
+        if (status.online) onlineCount++;
+      }
+      document.getElementById('stat-online').textContent = onlineCount;
+      document.getElementById('stat-reqs').textContent = data.total;
+      showToast('✅ Statuts mis à jour');
+    } catch(e) {
+      showToast('❌ Erreur de mise à jour', 'error');
+    }
+    btn.classList.remove('spinning');
+    btn.disabled = false;
+  }
+
+  // Auto-refresh every 30s
+  setInterval(refreshStatus, 30000);
 </script>
 {% endblock %}
