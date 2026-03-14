@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% set active = 'dashboard' %}
+{% block title %}Stats {{ domain }} — Jleray-Relay{% endblock %}
+
+{% block head %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  .back-link { display:inline-flex; align-items:center; gap:0.5rem; color:var(--text-muted); text-decoration:none; font-size:0.88rem; margin-bottom:1.5rem; transition:color 0.2s; }
+  .back-link:hover { color:var(--accent); }
+  .domain-header { margin-bottom:2rem; }
+  .domain-header h1 { font-size:1.8rem; font-weight:800; background:linear-gradient(135deg,var(--accent3),var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .domain-header p { color:var(--text-muted); font-size:0.88rem; margin-top:0.3rem; font-family:monospace; }
+  .kpi-row { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:1rem; margin-bottom:2rem; }
+  .kpi {
+    background:var(--card); border:1px solid var(--border); border-radius:14px;
+    padding:1.2rem 1.5rem; text-align:center;
+    transition:all 0.3s;
+  }
+  .kpi:hover { border-color:rgba(108,99,255,0.4); transform:translateY(-2px); }
+  .kpi-val { font-size:2rem; font-weight:800; line-height:1; }
+  .kpi-label { font-size:0.72rem; color:var(--text-muted); margin-top:0.4rem; text-transform:uppercase; letter-spacing:0.04em; }
+  .chart-card { background:var(--card); border:1px solid var(--border); border-radius:16px; padding:1.5rem; margin-bottom:1.5rem; }
+  .chart-card h3 { font-size:0.95rem; font-weight:700; color:var(--text-muted); margin-bottom:1.2rem; }
+  .chart-wrap { position:relative; height:200px; }
+  .uptime-bar-wrap { margin-bottom:1.5rem; }
+  .uptime-bar-wrap h3 { font-size:0.95rem; font-weight:700; color:var(--text-muted); margin-bottom:0.8rem; }
+  .uptime-segments { display:flex; gap:3px; height:28px; border-radius:8px; overflow:hidden; }
+  .seg { flex:1; border-radius:2px; transition:transform 0.2s; cursor:default; }
+  .seg:hover { transform:scaleY(1.15); }
+  .seg.on { background:var(--success); opacity:0.85; }
+  .seg.off { background:var(--danger); opacity:0.7; }
+  .seg.empty { background:var(--border); opacity:0.5; }
+  .no-data { text-align:center; padding:2rem; color:var(--text-muted); font-size:0.88rem; }
+  .status-current {
+    display:inline-flex; align-items:center; gap:0.5rem;
+    padding:0.35rem 1rem; border-radius:999px; font-weight:700; font-size:0.85rem;
+  }
+  .status-current.online { background:rgba(0,230,118,0.12); color:var(--success); border:1px solid rgba(0,230,118,0.3); }
+  .status-current.offline { background:rgba(255,82,82,0.1); color:var(--danger); border:1px solid rgba(255,82,82,0.3); }
+  @media(max-width:600px) { .kpi-row { grid-template-columns:1fr 1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="/admin/dashboard" class="back-link animate-in">← Retour au dashboard</a>
+
+<div class="domain-header animate-in" style="animation-delay:0.05s">
+  <div style="display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin-bottom:0.5rem">
+    <h1>{{ domain }}</h1>
+    <span class="status-current {{ 'online' if status.get('online') else 'offline' }}">
+      {{ '🟢 En ligne' if status.get('online') else '🔴 Hors ligne' }}
+    </span>
+  </div>
+  <p>→ {{ backend }}</p>
+</div>
+
+<div class="kpi-row">
+  <div class="kpi animate-in" style="animation-delay:0.1s">
+    <div class="kpi-val" style="color:{% if uptime >= 90 %}var(--success){% elif uptime >= 60 %}var(--warning){% else %}var(--danger){% endif %}">{{ uptime }}%</div>
+    <div class="kpi-label">Uptime</div>
+  </div>
+  <div class="kpi animate-in" style="animation-delay:0.15s">
+    <div class="kpi-val" style="color:var(--accent3)">{{ status.get('latency_ms', '?') }}ms</div>
+    <div class="kpi-label">Latence actuelle</div>
+  </div>
+  <div class="kpi animate-in" style="animation-delay:0.2s">
+    <div class="kpi-val" style="color:var(--warning)">{{ hits }}</div>
+    <div class="kpi-label">Requêtes reçues</div>
+  </div>
+  <div class="kpi animate-in" style="animation-delay:0.25s">
+    <div class="kpi-val" style="color:var(--accent)">{{ history|length }}</div>
+    <div class="kpi-label">Points historique</div>
+  </div>
+</div>
+
+{% if history %}
+<div class="uptime-bar-wrap animate-in" style="animation-delay:0.3s">
+  <h3>🟦 Historique de disponibilité ({{ history|length }} sondages, 1/min)</h3>
+  <div class="uptime-segments" id="uptimeSegs"></div>
+</div>
+
+<div class="chart-card animate-in" style="animation-delay:0.35s">
+  <h3>⏱️ Latence (ms) dans le temps</h3>
+  <div class="chart-wrap">
+    <canvas id="latencyChart"></canvas>
+  </div>
+</div>
+{% else %}
+<div class="no-data animate-in" style="animation-delay:0.3s">
+  <p>📊 Pas encore de données historiques pour ce domaine.</p>
+  <p style="margin-top:0.5rem;font-size:0.8rem">Les données sont collectées toutes les 60 secondes automatiquement.</p>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+{% if history %}
+<script>
+  const history = {{ history | tojson }};
+
+  // Uptime segments bar
+  const segs = document.getElementById('uptimeSegs');
+  [...history].reverse().forEach(p => {
+    const seg = document.createElement('div');
+    seg.className = `seg ${p.online ? 'on' : 'off'}`;
+    const d = new Date(p.ts * 1000);
+    seg.title = `${d.toLocaleTimeString('fr-FR')} — ${p.online ? p.latency_ms + 'ms' : 'offline'}`;
+    segs.appendChild(seg);
+  });
+
+  // Latency chart
+  const labels = [...history].reverse().map(p => {
+    const d = new Date(p.ts * 1000);
+    return d.toLocaleTimeString('fr-FR', { hour:'2-digit', minute:'2-digit' });
+  });
+  const latencies = [...history].reverse().map(p => p.online ? p.latency_ms : null);
+
+  new Chart(document.getElementById('latencyChart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        label: 'Latence (ms)',
+        data: latencies,
+        borderColor: '#6c63ff',
+        backgroundColor: 'rgba(108,99,255,0.08)',
+        pointBackgroundColor: latencies.map(v => v === null ? '#ff5252' : (v > 300 ? '#ffd740' : '#00e676')),
+        pointRadius: 4,
+        pointHoverRadius: 7,
+        tension: 0.4,
+        fill: true,
+        spanGaps: false,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#16213e',
+          borderColor: '#2a2a4a',
+          borderWidth: 1,
+          titleColor: '#e8e8f0',
+          bodyColor: '#8888aa',
+          callbacks: {
+            label: ctx => ctx.parsed.y === null ? 'Offline' : `${ctx.parsed.y}ms`
+          }
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#8888aa', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#8888aa', font: { size: 10 } }, grid: { color: 'rgba(255,255,255,0.04)' }, min: 0 }
+      }
+    }
+  });
+</script>
+{% endif %}
+{% endblock %}
