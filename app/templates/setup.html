@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jleray-Relay — Non configuré</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root { --bg:#0a0a0f; --accent:#6c63ff; --accent3:#00d9ff; --accent2:#ff6b9d; --text:#e8e8f0; --text-muted:#8888aa; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg); color: var(--text);
+      min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    }
+    .card {
+      text-align: center; padding: 3rem 2.5rem;
+      background: rgba(22,33,62,0.6);
+      border: 1px solid rgba(108,99,255,0.2);
+      border-radius: 24px; max-width: 480px;
+      backdrop-filter: blur(20px);
+      animation: pop 0.5s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes pop { from { opacity:0; transform:scale(0.94); } to { opacity:1; transform:scale(1); } }
+    .icon { font-size: 4rem; margin-bottom: 1.5rem; }
+    h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 0.8rem; }
+    .domain {
+      background: linear-gradient(135deg, var(--accent3), var(--accent));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      font-size: 1.1rem; font-weight: 700; margin-bottom: 1.5rem;
+    }
+    p { color: var(--text-muted); font-size: 0.9rem; line-height: 1.6; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      margin-top: 2rem; padding: 0.75rem 1.5rem;
+      background: linear-gradient(135deg, var(--accent), #9c63ff);
+      color: white; border: none; border-radius: 12px;
+      font-size: 0.95rem; font-weight: 700; font-family: inherit;
+      cursor: pointer; text-decoration: none;
+      box-shadow: 0 4px 20px rgba(108,99,255,0.4);
+      transition: all 0.25s;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(108,99,255,0.5); }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="icon">⚙️</div>
+    <h1>Domaine non configuré</h1>
+    <p class="domain">{{ host }}</p>
+    <p>Ce domaine n'est pas encore assigné à un backend dans Jleray-Relay.<br>Connectez-vous au panneau d'administration pour configurer la redirection.</p>
+    <a href="/admin/dashboard" class="btn">🔀 Ouvrir le panneau</a>
+  </div>
+</body>
+</html>

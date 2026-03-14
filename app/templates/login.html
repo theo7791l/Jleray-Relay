@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jleray-Relay — Connexion</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0a0a0f; --bg2: #12121a; --bg3: #1a1a2e;
+      --accent: #6c63ff; --accent2: #ff6b9d; --accent3: #00d9ff;
+      --text: #e8e8f0; --text-muted: #8888aa;
+      --border: #2a2a4a; --danger: #ff5252;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .bg-anim {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background:
+        radial-gradient(ellipse at 15% 50%, rgba(108,99,255,0.12) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 20%, rgba(0,217,255,0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 60% 80%, rgba(255,107,157,0.07) 0%, transparent 50%);
+    }
+    .grid-bg {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background-image: linear-gradient(rgba(108,99,255,0.04) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(108,99,255,0.04) 1px, transparent 1px);
+      background-size: 50px 50px;
+    }
+    .card {
+      position: relative; z-index: 1;
+      background: rgba(22,33,62,0.8);
+      border: 1px solid rgba(108,99,255,0.25);
+      border-radius: 24px;
+      padding: 2.5rem;
+      width: 420px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 80px rgba(108,99,255,0.08);
+      animation: slideUp 0.6s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes slideUp {
+      from { opacity:0; transform: translateY(30px) scale(0.97); }
+      to { opacity:1; transform: translateY(0) scale(1); }
+    }
+    .logo-area { text-align: center; margin-bottom: 2rem; }
+    .logo-icon {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      border-radius: 18px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 1rem;
+      box-shadow: 0 8px 30px rgba(108,99,255,0.4);
+    }
+    h1 { font-size: 1.6rem; font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), var(--accent3));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .subtitle { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.3rem; }
+    .form-group { margin-bottom: 1.2rem; }
+    label { display: block; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); margin-bottom: 0.4rem; }
+    .input-wrap { position: relative; }
+    input[type=password] {
+      background: rgba(10,10,15,0.6);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.75rem 3rem 0.75rem 1rem;
+      color: var(--text);
+      font-family: inherit; font-size: 1rem;
+      width: 100%; outline: none;
+      transition: all 0.25s;
+    }
+    input[type=password]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(108,99,255,0.2);
+    }
+    .toggle-pw {
+      position: absolute; right: 0.8rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; color: var(--text-muted);
+      font-size: 1.1rem; transition: color 0.2s;
+    }
+    .toggle-pw:hover { color: var(--accent); }
+    .btn {
+      width: 100%; padding: 0.85rem;
+      background: linear-gradient(135deg, var(--accent), #9c63ff);
+      color: white; border: none; border-radius: 12px;
+      font-size: 1rem; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: all 0.25s;
+      box-shadow: 0 4px 20px rgba(108,99,255,0.4);
+      display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(108,99,255,0.5); }
+    .btn:active { transform: translateY(0); }
+    .alert-error {
+      background: rgba(255,82,82,0.12);
+      border: 1px solid rgba(255,82,82,0.3);
+      color: #ff5252;
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      font-size: 0.88rem;
+      margin-bottom: 1rem;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .hint { text-align: center; margin-top: 1.2rem; font-size: 0.8rem; color: var(--text-muted); }
+  </style>
+</head>
+<body>
+  <div class="bg-anim"></div>
+  <div class="grid-bg"></div>
+  <div class="card">
+    <div class="logo-area">
+      <div class="logo-icon">🔀</div>
+      <h1>Jleray-Relay</h1>
+      <p class="subtitle">Panneau d'administration</p>
+    </div>
+    {% if error %}
+    <div class="alert-error">⚠️ {{ error }}</div>
+    {% endif %}
+    <form method="POST" action="/admin/login">
+      <div class="form-group">
+        <label>Mot de passe admin</label>
+        <div class="input-wrap">
+          <input type="password" name="password" id="pw" placeholder="Entrez votre mot de passe" autofocus required />
+          <button type="button" class="toggle-pw" onclick="togglePw()" id="eyeBtn">👁️</button>
+        </div>
+      </div>
+      <button type="submit" class="btn">🔐 Se connecter</button>
+    </form>
+    <p class="hint">Mot de passe par défaut : <code>admin123</code></p>
+  </div>
+  <script>
+    function togglePw() {
+      const pw = document.getElementById('pw');
+      pw.type = pw.type === 'password' ? 'text' : 'password';
+    }
+  </script>
+</body>
+</html>
