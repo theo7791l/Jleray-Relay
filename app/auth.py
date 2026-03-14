@@ -1,44 +1,48 @@
-from passlib.context import CryptContext
-from jose import jwt, JWTError
+import os
 from datetime import datetime, timedelta
-from fastapi import Cookie, HTTPException, status
+from typing import Optional
+
+from fastapi import Request, HTTPException
+from jose import JWTError, jwt
+from passlib.context import CryptContext
+
 from app.config import load_config, save_config
 
-SECRET_KEY = "jleray-relay-secret-key-change-me"
+SECRET_KEY = os.getenv("SECRET_KEY", "changez-moi-en-production-jleray-relay-2026")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_HOURS = 24
+ACCESS_TOKEN_EXPIRE = timedelta(hours=24)
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def hash_password(password: str) -> str:
-    return pwd_context.hash(password)
+    return pwd_ctx.hash(password)
 
 def verify_password(plain: str, hashed: str) -> bool:
-    return pwd_context.verify(plain, hashed)
+    return pwd_ctx.verify(plain, hashed)
 
 def create_token(data: dict) -> str:
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(hours=ACCESS_TOKEN_EXPIRE_HOURS)
-    to_encode.update({"exp": expire})
+    to_encode["exp"] = datetime.utcnow() + ACCESS_TOKEN_EXPIRE
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-def decode_token(token: str) -> dict:
+def decode_token(token: str) -> Optional[dict]:
     try:
         return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except JWTError:
-        return {}
+        return None
+
+def get_current_admin(request: Request):
+    token = request.cookies.get("relay_token")
+    if not token:
+        raise HTTPException(status_code=307, headers={"Location": "/admin/login"})
+    payload = decode_token(token)
+    if not payload or payload.get("sub") != "admin":
+        raise HTTPException(status_code=307, headers={"Location": "/admin/login"})
+    return payload
 
 def ensure_default_password():
-    """Create default admin password if not set."""
     config = load_config()
     if not config.get("admin_password_hash"):
         config["admin_password_hash"] = hash_password("admin123")
         save_config(config)
-
-def get_current_admin(relay_token: str = Cookie(default=None)):
-    if not relay_token:
-        raise HTTPException(status_code=status.HTTP_303_SEE_OTHER, headers={"Location": "/admin/login"})
-    payload = decode_token(relay_token)
-    if not payload.get("sub") == "admin":
-        raise HTTPException(status_code=status.HTTP_303_SEE_OTHER, headers={"Location": "/admin/login"})
-    return True
+        print("⚠️  Mot de passe par défaut activé : admin123 — changez-le dans le panel !")
