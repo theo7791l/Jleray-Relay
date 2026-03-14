@@ -9,62 +9,78 @@
     font-size: 2rem; font-weight: 800;
     background: linear-gradient(135deg, #e8e8f0, #8888aa);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    margin-bottom: 0.4rem;
   }
-  .hero p { color: var(--text-muted); font-size: 0.9rem; }
+  .hero p { color: var(--text-muted); font-size: 0.9rem; margin-top: 0.4rem; }
   .stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 2rem; }
   .stat-card {
     background: var(--card); border: 1px solid var(--border);
     border-radius: 14px; padding: 1.2rem 1.5rem;
     display: flex; align-items: center; gap: 1rem;
-    transition: all 0.3s; cursor: default;
+    transition: all 0.3s; cursor: default; position: relative; overflow: hidden;
   }
-  .stat-card:hover { border-color: rgba(108,99,255,0.4); transform: translateY(-3px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+  .stat-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(135deg, rgba(108,99,255,0.04), transparent);
+    opacity: 0; transition: opacity 0.3s;
+  }
+  .stat-card:hover::before { opacity: 1; }
+  .stat-card:hover { border-color: rgba(108,99,255,0.4); transform: translateY(-3px); box-shadow: 0 10px 35px rgba(0,0,0,0.3); }
   .stat-icon { font-size: 2rem; }
   .stat-val { font-size: 1.8rem; font-weight: 800; color: var(--accent); line-height: 1; }
-  .stat-label { font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem; }
+  .stat-label { font-size: 0.76rem; color: var(--text-muted); margin-top: 0.2rem; text-transform: uppercase; letter-spacing: 0.04em; }
   .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-  .section-title { font-size: 1.05rem; font-weight: 700; }
+  .section-title { font-size: 1.05rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem; }
   .add-form {
     background: var(--card); border: 1px solid var(--border);
     border-radius: 16px; padding: 1.5rem; margin-bottom: 2rem;
-    transition: border-color 0.3s;
+    transition: all 0.3s;
   }
-  .add-form:focus-within { border-color: rgba(108,99,255,0.4); }
-  .add-form h3 { margin-bottom: 1rem; font-size: 0.95rem; color: var(--text-muted); font-weight: 600; display:flex; align-items:center; gap:0.5rem; }
+  .add-form:focus-within {
+    border-color: rgba(108,99,255,0.5);
+    box-shadow: 0 0 0 3px rgba(108,99,255,0.08), 0 8px 30px rgba(0,0,0,0.2);
+  }
+  .add-form h3 { margin-bottom: 1rem; font-size: 0.95rem; color: var(--text-muted); font-weight: 600; }
   .form-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.8rem; align-items: end; }
   .routes-list { display: flex; flex-direction: column; gap: 0.75rem; }
   .route-item {
     background: var(--card); border: 1px solid var(--border);
     border-radius: 14px; padding: 1rem 1.5rem;
     display: flex; align-items: center; gap: 1rem;
-    transition: all 0.25s;
-    animation: fadeIn 0.35s ease both;
+    transition: all 0.3s;
+    animation: slideLeft 0.4s ease both;
+    position: relative; overflow: hidden;
   }
-  .route-item:hover { border-color: rgba(108,99,255,0.3); background: rgba(22,33,62,0.9); transform: translateX(4px); }
+  .route-item::after {
+    content: '';
+    position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: linear-gradient(to bottom, var(--accent), var(--accent3));
+    opacity: 0; transition: opacity 0.3s;
+    border-radius: 3px 0 0 3px;
+  }
+  .route-item:hover { border-color: rgba(108,99,255,0.4); transform: translateX(6px); box-shadow: 0 6px 25px rgba(0,0,0,0.25); }
+  .route-item:hover::after { opacity: 1; }
+  .route-item.just-added {
+    animation: flashAdd 1.2s ease both;
+  }
+  @keyframes flashAdd {
+    0% { border-color: var(--success); box-shadow: 0 0 20px rgba(0,230,118,0.3); }
+    100% { border-color: var(--border); box-shadow: none; }
+  }
   .route-domain {
     font-weight: 700; font-size: 0.92rem;
     background: linear-gradient(135deg, var(--accent3), var(--accent));
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    min-width: 180px;
+    min-width: 160px;
   }
   .route-arrow { color: var(--text-muted); flex-shrink: 0; }
-  .route-backend { font-family: 'Courier New', monospace; font-size: 0.85rem; color: var(--text-muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .route-hits { font-size: 0.78rem; color: var(--warning); background: rgba(255,215,64,0.1); border: 1px solid rgba(255,215,64,0.2); border-radius: 999px; padding: 0.2rem 0.6rem; white-space: nowrap; }
-  .status-dot {
-    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
-    transition: background 0.3s;
-  }
-  .status-dot.online { background: var(--success); box-shadow: 0 0 8px var(--success); animation: pulse 2s infinite; }
-  .status-dot.offline { background: var(--danger); box-shadow: 0 0 8px var(--danger); }
-  .status-dot.checking { background: var(--warning); animation: pulse 1s infinite; }
-  .latency { font-size: 0.75rem; color: var(--text-muted); white-space: nowrap; }
-  .empty-state {
-    text-align: center; padding: 3rem;
-    background: var(--card); border: 2px dashed var(--border);
-    border-radius: 16px; color: var(--text-muted);
-  }
-  .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+  .route-backend { font-family: 'Courier New', monospace; font-size: 0.83rem; color: var(--text-muted); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .route-hits { font-size: 0.75rem; color: var(--warning); background: rgba(255,215,64,0.08); border: 1px solid rgba(255,215,64,0.2); border-radius: 999px; padding: 0.18rem 0.55rem; white-space: nowrap; }
+  .status-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; transition: all 0.4s; }
+  .status-dot.online { background: var(--success); box-shadow: 0 0 10px rgba(0,230,118,0.6); animation: pulseGlow 2.5s infinite; }
+  .status-dot.offline { background: var(--danger); box-shadow: 0 0 6px rgba(255,82,82,0.5); }
+  .status-dot.checking { background: var(--warning); animation: pulseGlow 0.8s infinite; }
+  .latency { font-size: 0.75rem; white-space: nowrap; font-family: monospace; min-width: 55px; text-align: right; }
   .refresh-btn {
     display: inline-flex; align-items: center; gap: 0.4rem;
     padding: 0.4rem 0.9rem; border-radius: 8px;
@@ -72,30 +88,27 @@
     color: var(--text-muted); font-size: 0.8rem; cursor: pointer;
     transition: all 0.2s; font-family: inherit;
   }
-  .refresh-btn:hover { color: var(--accent); border-color: var(--accent); }
-  .refresh-btn.spinning .icon { animation: spin 0.8s linear infinite; display: inline-block; }
-  .toast {
-    position: fixed; bottom: 2rem; right: 2rem; z-index: 999;
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 12px; padding: 0.8rem 1.2rem;
-    font-size: 0.88rem; font-weight: 500;
-    box-shadow: 0 8px 30px rgba(0,0,0,0.4);
-    transform: translateY(100px); opacity: 0;
-    transition: all 0.35s cubic-bezier(0.22,1,0.36,1);
+  .refresh-btn:hover { color: var(--accent); border-color: var(--accent); background: rgba(108,99,255,0.08); }
+  .refresh-btn .spin-icon { display: inline-block; transition: transform 0.1s; }
+  .refresh-btn.spinning .spin-icon { animation: spin 0.7s linear infinite; }
+  .empty-state {
+    text-align: center; padding: 3.5rem;
+    background: var(--card); border: 2px dashed var(--border);
+    border-radius: 16px; color: var(--text-muted);
+    transition: border-color 0.3s;
   }
-  .toast.show { transform: translateY(0); opacity: 1; }
-  .toast.success { border-color: var(--success); color: var(--success); }
-  .toast.error { border-color: var(--danger); color: var(--danger); }
-  @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
-  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .empty-state:hover { border-color: rgba(108,99,255,0.3); }
+  .empty-state .icon { font-size: 3.5rem; margin-bottom: 1rem; display: block; }
+  @keyframes pulseGlow { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.6;transform:scale(0.85)} }
   @keyframes spin { to { transform: rotate(360deg); } }
+  @keyframes slideLeft { from { opacity:0; transform:translateX(16px); } to { opacity:1; transform:translateX(0); } }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="hero animate-in">
-  <h1>🔀 Dashboard</h1>
-  <p>Gérez vos routes en temps réel. Les statuts sont vérifiés à chaque chargement.</p>
+  <h1>Dashboard</h1>
+  <p>Gérez vos routes en temps réel — statuts et latences actualisés automatiquement.</p>
 </div>
 
 <div class="stats-row">
@@ -103,14 +116,14 @@
     <div class="stat-icon">🔀</div>
     <div>
       <div class="stat-val" id="stat-routes">{{ count }}</div>
-      <div class="stat-label">Routes actives</div>
+      <div class="stat-label">Routes</div>
     </div>
   </div>
   <div class="stat-card animate-in" style="animation-delay:0.1s">
     <div class="stat-icon">📊</div>
     <div>
       <div class="stat-val" id="stat-reqs" style="color:var(--accent3)">{{ total_requests }}</div>
-      <div class="stat-label">Requêtes proxifiées</div>
+      <div class="stat-label">Requêtes</div>
     </div>
   </div>
   <div class="stat-card animate-in" style="animation-delay:0.15s">
@@ -119,105 +132,163 @@
       <div class="stat-val" id="stat-online" style="color:var(--success)">
         {{ statuses.values()|selectattr('online')|list|length }}
       </div>
-      <div class="stat-label">Backends en ligne</div>
+      <div class="stat-label">En ligne</div>
     </div>
   </div>
-  <div class="stat-card animate-in" style="animation-delay:0.2s">
-    <a href="/admin/logs" style="text-decoration:none;display:contents">
+  <div class="stat-card animate-in" style="animation-delay:0.2s; cursor:pointer" onclick="location.href='/admin/logs'">
     <div class="stat-icon">📋</div>
     <div>
-      <div class="stat-val" style="color:var(--warning)">LOGS</div>
+      <div class="stat-val" style="color:var(--warning); font-size:1rem; padding-top:0.3rem">LOGS LIVE</div>
       <div class="stat-label">Voir les requêtes</div>
     </div>
-    </a>
   </div>
 </div>
 
 <div class="add-form animate-in" style="animation-delay:0.25s">
   <h3>➕ Assigner un nouveau domaine</h3>
-  <form method="POST" action="/admin/routes/add">
+  <form id="addRouteForm" onsubmit="handleAddRoute(event)">
     <div class="form-row">
       <div class="form-group">
         <label>Nom de domaine</label>
-        <input type="text" name="domain" placeholder="ex: test1.awlor.online" required autocomplete="off" />
+        <input type="text" name="domain" id="inputDomain" placeholder="ex: test1.awlor.online" required autocomplete="off" />
       </div>
       <div class="form-group">
         <label>Backend cible (URL complète)</label>
-        <input type="text" name="backend" placeholder="ex: http://12.34.56.78:8080" required autocomplete="off" />
+        <input type="text" name="backend" id="inputBackend" placeholder="ex: http://12.34.56.78:8080" required autocomplete="off" />
       </div>
-      <button type="submit" class="btn btn-primary">⚡ Assigner</button>
+      <button type="submit" class="btn btn-primary" id="addBtn">⚡ Assigner</button>
     </div>
   </form>
 </div>
 
 <div class="animate-in" style="animation-delay:0.3s">
   <div class="section-header">
-    <span class="section-title">Routes configurées</span>
+    <span class="section-title">🔗 Routes configurées</span>
     <div style="display:flex;gap:0.5rem;align-items:center">
-      <span class="badge badge-active">{{ count }} route{{ 's' if count > 1 else '' }}</span>
+      <span class="badge badge-active" id="routeCountBadge">{{ count }} route{{ 's' if count > 1 else '' }}</span>
       <button class="refresh-btn" onclick="refreshStatus()" id="refreshBtn">
-        <span class="icon">🔄</span> Actualiser statuts
+        <span class="spin-icon">🔄</span> Statuts
       </button>
     </div>
   </div>
 
+  <div id="routesList">
   {% if routes %}
-  <div class="routes-list" id="routesList">
     {% for domain, backend in routes.items() %}
     {% set s = statuses.get(domain, {}) %}
-    <div class="route-item" id="route-{{ loop.index }}" style="animation-delay:{{ loop.index * 0.06 }}s">
-      <div class="status-dot {{ 'online' if s.get('online') else 'offline' }}" id="dot-{{ domain|replace('.','_') }}"></div>
+    <div class="route-item" id="ri-{{ domain|replace('.','_')|replace('-','_') }}" data-domain="{{ domain }}" style="animation-delay:{{ loop.index * 0.06 }}s">
+      <div class="status-dot {{ 'online' if s.get('online') else 'offline' }}" id="dot-{{ domain|replace('.','_')|replace('-','_') }}"></div>
       <span class="route-domain">{{ domain }}</span>
       <span class="route-arrow">→</span>
       <span class="route-backend" title="{{ backend }}">{{ backend }}</span>
       {% if hits.get(domain) %}
-      <span class="route-hits">⚡ {{ hits[domain] }} hits</span>
+      <span class="route-hits">⚡ {{ hits[domain] }}</span>
       {% endif %}
-      <span class="latency" id="lat-{{ domain|replace('.','_') }}"
+      <span class="latency" id="lat-{{ domain|replace('.','_')|replace('-','_') }}"
         style="color: {{ 'var(--success)' if s.get('online') else 'var(--danger)' }}">
         {% if s.get('online') %}{{ s.get('latency_ms', '?') }}ms{% else %}offline{% endif %}
       </span>
-      <form method="POST" action="/admin/routes/delete" style="margin-left:0.5rem">
-        <input type="hidden" name="domain" value="{{ domain }}" />
-        <button type="submit" class="btn btn-danger" onclick="return confirm('Supprimer cette route ?')" style="padding:0.4rem 0.8rem;font-size:0.82rem">🗑</button>
-      </form>
+      <button class="btn btn-danger" style="padding:0.4rem 0.8rem;font-size:0.82rem;margin-left:0.3rem"
+        onclick="deleteRoute('{{ domain }}')"
+        title="Supprimer">🗑</button>
     </div>
     {% endfor %}
-  </div>
   {% else %}
-  <div class="empty-state">
-    <div class="icon">🌐</div>
-    <p style="font-weight:600;margin-bottom:0.4rem">Aucune route configurée</p>
+  <div class="empty-state" id="emptyState">
+    <span class="icon">🌐</span>
+    <p style="font-weight:700;font-size:1rem;margin-bottom:0.5rem">Aucune route configurée</p>
     <p style="font-size:0.85rem">Ajoutez votre premier domaine ci-dessus pour commencer.</p>
   </div>
   {% endif %}
+  </div>
 </div>
-
-<div id="toast" class="toast"></div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  // Animate counters on load
+  // Animate counters
   document.querySelectorAll('.stat-val').forEach(el => {
     const target = parseInt(el.textContent);
     if (!isNaN(target) && target > 0) {
-      let current = 0;
-      const timer = setInterval(() => {
-        current = Math.min(current + Math.ceil(target / 15), target);
-        el.textContent = current;
-        if (current >= target) clearInterval(timer);
+      let n = 0;
+      const t = setInterval(() => {
+        n = Math.min(n + Math.ceil(target / 15), target);
+        el.textContent = n;
+        if (n >= target) clearInterval(t);
       }, 40);
     }
   });
 
-  function showToast(msg, type = 'success') {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.className = `toast ${type} show`;
-    setTimeout(() => t.className = 'toast', 3000);
+  // Add route via fetch (no page reload)
+  async function handleAddRoute(e) {
+    e.preventDefault();
+    const domain = document.getElementById('inputDomain').value.trim();
+    const backend = document.getElementById('inputBackend').value.trim();
+    const btn = document.getElementById('addBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ ...';
+    try {
+      const fd = new FormData();
+      fd.append('domain', domain);
+      fd.append('backend', backend);
+      const res = await fetch('/admin/routes/add', { method: 'POST', body: fd });
+      if (res.ok || res.redirected) {
+        Toast.show(`Route "${domain}" ajoutée !`, 'success');
+        document.getElementById('addRouteForm').reset();
+        await refreshRouteList();
+      } else {
+        Toast.show('Erreur lors de l\'ajout', 'error');
+      }
+    } catch(err) {
+      Toast.show('Erreur réseau', 'error');
+    }
+    btn.disabled = false;
+    btn.innerHTML = '⚡ Assigner';
   }
 
+  // Delete route via fetch
+  async function deleteRoute(domain) {
+    const ok = await relayConfirm(`Supprimer la route "${domain}" ?`);
+    if (!ok) return;
+    const fd = new FormData();
+    fd.append('domain', domain);
+    try {
+      await fetch('/admin/routes/delete', { method: 'POST', body: fd });
+      // Animate out
+      const key = domain.replace(/[.-]/g,'_');
+      const el = document.getElementById(`ri-${key}`);
+      if (el) {
+        el.style.transition = 'all 0.3s';
+        el.style.opacity = '0';
+        el.style.transform = 'translateX(30px)';
+        setTimeout(() => { el.remove(); updateEmptyState(); }, 320);
+      }
+      Toast.show(`Route "${domain}" supprimée`, 'info');
+      // Update counter
+      const badge = document.getElementById('routeCountBadge');
+      const statEl = document.getElementById('stat-routes');
+      const current = parseInt(statEl.textContent);
+      const next = Math.max(0, current - 1);
+      statEl.textContent = next;
+      badge.textContent = `${next} route${next > 1 ? 's' : ''}`;
+    } catch {
+      Toast.show('Erreur suppression', 'error');
+    }
+  }
+
+  function updateEmptyState() {
+    const list = document.getElementById('routesList');
+    if (list && list.querySelectorAll('.route-item').length === 0) {
+      list.innerHTML = `<div class="empty-state"><span class="icon">🌐</span><p style="font-weight:700;margin-bottom:0.5rem">Aucune route</p><p style="font-size:0.85rem">Ajoutez votre premier domaine ci-dessus.</p></div>`;
+    }
+  }
+
+  async function refreshRouteList() {
+    // Refresh via page reload (simple, avoids full re-render logic)
+    location.reload();
+  }
+
+  // Refresh statuses via AJAX
   async function refreshStatus() {
     const btn = document.getElementById('refreshBtn');
     btn.classList.add('spinning');
@@ -227,12 +298,10 @@
       const data = await res.json();
       let onlineCount = 0;
       for (const [domain, status] of Object.entries(data.statuses)) {
-        const key = domain.replace(/\./g, '_');
+        const key = domain.replace(/[.-]/g, '_');
         const dot = document.getElementById(`dot-${key}`);
         const lat = document.getElementById(`lat-${key}`);
-        if (dot) {
-          dot.className = `status-dot ${status.online ? 'online' : 'offline'}`;
-        }
+        if (dot) dot.className = `status-dot ${status.online ? 'online' : 'offline'}`;
         if (lat) {
           lat.style.color = status.online ? 'var(--success)' : 'var(--danger)';
           lat.textContent = status.online ? `${status.latency_ms}ms` : 'offline';
@@ -241,10 +310,8 @@
       }
       document.getElementById('stat-online').textContent = onlineCount;
       document.getElementById('stat-reqs').textContent = data.total;
-      showToast('✅ Statuts mis à jour');
-    } catch(e) {
-      showToast('❌ Erreur de mise à jour', 'error');
-    }
+      Toast.show('Statuts mis à jour', 'success');
+    } catch { Toast.show('Erreur de mise à jour', 'error'); }
     btn.classList.remove('spinning');
     btn.disabled = false;
   }

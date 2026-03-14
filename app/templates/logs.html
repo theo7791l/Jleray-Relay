@@ -5,90 +5,79 @@
 {% block head %}
 <style>
   .logs-header { margin-bottom: 1.5rem; }
-  .logs-header h1 { font-size: 1.8rem; font-weight: 800; margin-bottom: 0.3rem; }
-  .logs-header p { color: var(--text-muted); font-size: 0.9rem; }
-  .log-controls {
-    display: flex; gap: 0.8rem; align-items: center;
-    margin-bottom: 1.2rem; flex-wrap: wrap;
-  }
-  .log-controls select, .log-controls input {
-    width: auto; flex: 1; min-width: 140px; max-width: 220px;
-    padding: 0.5rem 0.9rem; font-size: 0.85rem;
-  }
-  .logs-table-wrap {
-    background: var(--card); border: 1px solid var(--border);
-    border-radius: 16px; overflow: hidden;
-  }
-  .logs-table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+  .logs-header h1 { font-size: 1.8rem; font-weight: 800; }
+  .logs-header p { color: var(--text-muted); font-size: 0.88rem; margin-top: 0.4rem; }
+  .log-controls { display: flex; gap: 0.8rem; align-items: center; margin-bottom: 1.2rem; flex-wrap: wrap; }
+  .log-controls select, .log-controls input { width: auto; flex: 1; min-width: 140px; max-width: 220px; padding: 0.5rem 0.9rem; font-size: 0.85rem; }
+  .logs-table-wrap { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; }
+  .logs-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
   .logs-table thead { background: var(--bg3); }
-  .logs-table th {
-    padding: 0.8rem 1rem; text-align: left;
-    font-size: 0.75rem; font-weight: 600;
-    color: var(--text-muted); text-transform: uppercase;
-    letter-spacing: 0.05em; border-bottom: 1px solid var(--border);
-  }
-  .logs-table td { padding: 0.75rem 1rem; border-bottom: 1px solid rgba(42,42,74,0.5); vertical-align: middle; }
+  .logs-table th { padding: 0.75rem 1rem; text-align: left; font-size: 0.72rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+  .logs-table td { padding: 0.65rem 1rem; border-bottom: 1px solid rgba(42,42,74,0.4); vertical-align: middle; }
   .logs-table tr:last-child td { border-bottom: none; }
-  .logs-table tbody tr { transition: background 0.15s; animation: fadeRow 0.3s ease both; }
+  .logs-table tbody tr { transition: background 0.15s; }
   .logs-table tbody tr:hover { background: rgba(108,99,255,0.06); }
-  .method-badge {
-    display: inline-block; padding: 0.15rem 0.5rem;
-    border-radius: 5px; font-size: 0.72rem; font-weight: 700;
-    font-family: monospace;
+  .logs-table tbody tr.new-row { animation: flashRow 1.5s ease both; }
+  @keyframes flashRow {
+    0% { background: rgba(0,217,255,0.12); }
+    100% { background: transparent; }
   }
-  .method-GET { background: rgba(0,217,255,0.12); color: var(--accent3); }
-  .method-POST { background: rgba(108,99,255,0.15); color: var(--accent); }
-  .method-DELETE { background: rgba(255,82,82,0.12); color: var(--danger); }
-  .method-PUT { background: rgba(255,215,64,0.12); color: var(--warning); }
-  .method-PATCH { background: rgba(0,230,118,0.1); color: var(--success); }
-  .status-ok { color: var(--success); font-weight: 700; font-family: monospace; }
-  .status-err { color: var(--danger); font-weight: 700; font-family: monospace; }
-  .status-warn { color: var(--warning); font-weight: 700; font-family: monospace; }
-  .log-path { font-family: monospace; color: var(--text-muted); max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .log-domain { font-weight: 600; font-size: 0.82rem;
-    background: linear-gradient(135deg, var(--accent3), var(--accent));
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  .method-badge { display:inline-block; padding:0.15rem 0.5rem; border-radius:5px; font-size:0.7rem; font-weight:700; font-family:monospace; }
+  .method-GET { background:rgba(0,217,255,0.12); color:var(--accent3); }
+  .method-POST { background:rgba(108,99,255,0.15); color:var(--accent); }
+  .method-DELETE { background:rgba(255,82,82,0.12); color:var(--danger); }
+  .method-PUT { background:rgba(255,215,64,0.12); color:var(--warning); }
+  .method-PATCH { background:rgba(0,230,118,0.1); color:var(--success); }
+  .status-ok { color:var(--success); font-weight:700; font-family:monospace; }
+  .status-err { color:var(--danger); font-weight:700; font-family:monospace; }
+  .status-warn { color:var(--warning); font-weight:700; font-family:monospace; }
+  .log-path { font-family:monospace; color:var(--text-muted); max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .log-domain { font-weight:600; font-size:0.82rem; background:linear-gradient(135deg,var(--accent3),var(--accent)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .log-time { font-size:0.74rem; color:var(--text-muted); font-family:monospace; white-space:nowrap; }
+  .empty-logs { text-align:center; padding:3rem; color:var(--text-muted); }
+  .ws-indicator {
+    display:inline-flex; align-items:center; gap:0.5rem;
+    padding:0.3rem 0.9rem; border-radius:999px;
+    font-size:0.78rem; font-weight:600;
+    transition: all 0.3s;
   }
-  .log-time { font-size: 0.75rem; color: var(--text-muted); font-family: monospace; white-space: nowrap; }
-  .log-dur { font-family: monospace; font-size: 0.8rem; }
-  .empty-logs { text-align:center; padding: 3rem; color: var(--text-muted); }
-  .live-badge {
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    background: rgba(0,230,118,0.1); color: var(--success);
-    border: 1px solid rgba(0,230,118,0.3);
-    border-radius: 999px; padding: 0.3rem 0.8rem;
-    font-size: 0.78rem; font-weight: 600;
-  }
-  .live-dot {
-    width: 7px; height: 7px; border-radius: 50%;
-    background: var(--success); animation: pulse 1.2s infinite;
-  }
-  @keyframes fadeRow { from { opacity:0; transform: translateX(-6px); } to { opacity:1; transform:none; } }
-  @keyframes pulse { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .ws-indicator.connected { background:rgba(0,230,118,0.1); color:var(--success); border:1px solid rgba(0,230,118,0.3); }
+  .ws-indicator.disconnected { background:rgba(255,82,82,0.1); color:var(--danger); border:1px solid rgba(255,82,82,0.3); }
+  .ws-dot { width:7px; height:7px; border-radius:50%; animation:pulse 1.2s infinite; }
+  .ws-dot.on { background:var(--success); }
+  .ws-dot.off { background:var(--danger); animation:none; }
+  .log-counter { font-size:0.78rem; color:var(--text-muted); }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="logs-header animate-in">
   <h1>📋 Logs de requêtes</h1>
-  <p>Historique en temps réel de toutes les requêtes proxifiées (200 dernières, en mémoire).</p>
+  <p>Flux en temps réel via WebSocket — toutes les requêtes proxifiées apparaissent ici instantanément.</p>
 </div>
 
 <div class="log-controls animate-in" style="animation-delay:0.1s">
-  <span class="live-badge"><span class="live-dot"></span> Live</span>
-  <input type="text" id="filterDomain" placeholder="🔍 Filtrer par domaine..." oninput="renderLogs()" />
-  <select id="filterStatus" onchange="renderLogs()">
-    <option value="">Tous les statuts</option>
-    <option value="2">2xx (succès)</option>
-    <option value="4">4xx (client error)</option>
-    <option value="5">5xx (server error)</option>
+  <span class="ws-indicator disconnected" id="wsIndicator">
+    <span class="ws-dot off" id="wsDot"></span>
+    <span id="wsLabel">Connexion...</span>
+  </span>
+  <span class="log-counter" id="logCount">0 entrées</span>
+  <input type="text" id="filterDomain" placeholder="🔍 Domaine..." oninput="renderLogs()" style="max-width:200px" />
+  <select id="filterStatus" onchange="renderLogs()" style="max-width:160px">
+    <option value="">Tous statuts</option>
+    <option value="2">2xx Succès</option>
+    <option value="4">4xx Erreur client</option>
+    <option value="5">5xx Erreur serveur</option>
   </select>
-  <select id="filterMethod" onchange="renderLogs()">
-    <option value="">Toutes les méthodes</option>
+  <select id="filterMethod" onchange="renderLogs()" style="max-width:140px">
+    <option value="">Toutes méthodes</option>
     <option>GET</option><option>POST</option><option>PUT</option><option>DELETE</option>
   </select>
-  <button class="btn btn-ghost" onclick="fetchLogs()" style="white-space:nowrap">🔄 Rafraîchir</button>
-  <button class="btn btn-danger" onclick="clearLogs()" style="white-space:nowrap">🗑 Effacer</button>
+  <label style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;cursor:pointer;white-space:nowrap">
+    <input type="checkbox" id="autoscroll" checked style="width:auto" /> Auto-scroll
+  </label>
+  <button class="btn btn-danger" onclick="clearLogs()" style="white-space:nowrap;margin-left:auto">🗑 Vider</button>
 </div>
 
 <div class="logs-table-wrap animate-in" style="animation-delay:0.15s">
@@ -101,11 +90,11 @@
         <th>Chemin</th>
         <th>Statut</th>
         <th>Durée</th>
-        <th>Erreur</th>
+        <th>Info</th>
       </tr>
     </thead>
     <tbody id="logBody">
-      <tr><td colspan="7" class="empty-logs">⏳ Chargement...</td></tr>
+      <tr><td colspan="7" class="empty-logs">🔌 Connexion WebSocket en cours...</td></tr>
     </tbody>
   </table>
 </div>
@@ -114,19 +103,55 @@
 {% block scripts %}
 <script>
   let allLogs = [];
+  let wsConnected = false;
 
-  async function fetchLogs() {
+  // ─ WebSocket connection for live logs ─
+  function initWS() {
+    const protocol = location.protocol === 'https:' ? 'wss' : 'ws';
+    const ws = new WebSocket(`${protocol}://${location.host}/ws/logs`);
+
+    ws.onopen = () => {
+      wsConnected = true;
+      setWSStatus(true);
+      Toast.show('WebSocket connecté — logs en direct', 'info');
+      fetchInitialLogs();
+    };
+
+    ws.onmessage = (e) => {
+      const log = JSON.parse(e.data);
+      allLogs.unshift(log);
+      if (allLogs.length > 200) allLogs.pop();
+      renderLogs(true);
+    };
+
+    ws.onclose = () => {
+      wsConnected = false;
+      setWSStatus(false);
+      setTimeout(initWS, 3000); // auto-reconnect
+    };
+
+    ws.onerror = () => ws.close();
+  }
+
+  function setWSStatus(connected) {
+    const indicator = document.getElementById('wsIndicator');
+    const dot = document.getElementById('wsDot');
+    const label = document.getElementById('wsLabel');
+    indicator.className = `ws-indicator ${connected ? 'connected' : 'disconnected'}`;
+    dot.className = `ws-dot ${connected ? 'on' : 'off'}`;
+    label.textContent = connected ? 'Live' : 'Déconnecté';
+  }
+
+  async function fetchInitialLogs() {
     try {
       const res = await fetch('/admin/api/logs?limit=100');
       const data = await res.json();
       allLogs = data.logs;
       renderLogs();
-    } catch(e) {
-      document.getElementById('logBody').innerHTML = `<tr><td colspan='7' class='empty-logs'>❌ Erreur de chargement</td></tr>`;
-    }
+    } catch {}
   }
 
-  function renderLogs() {
+  function renderLogs(isNew = false) {
     const domain = document.getElementById('filterDomain').value.toLowerCase();
     const status = document.getElementById('filterStatus').value;
     const method = document.getElementById('filterMethod').value;
@@ -136,9 +161,10 @@
       if (method && l.method !== method) return false;
       return true;
     });
+    document.getElementById('logCount').textContent = `${filtered.length} entrée${filtered.length > 1 ? 's' : ''}`;
     const tbody = document.getElementById('logBody');
     if (!filtered.length) {
-      tbody.innerHTML = `<tr><td colspan='7' class='empty-logs'>📭 Aucun log correspond aux filtres</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan='7' class='empty-logs'>📭 Aucun log — les requêtes proxy apparaîtront ici en temps réel</td></tr>`;
       return;
     }
     tbody.innerHTML = filtered.map((l, i) => {
@@ -147,26 +173,28 @@
       const sc = l.status;
       const scClass = sc >= 500 ? 'status-err' : sc >= 400 ? 'status-warn' : 'status-ok';
       const durColor = l.duration_ms > 1000 ? 'var(--danger)' : l.duration_ms > 300 ? 'var(--warning)' : 'var(--success)';
-      return `<tr style='animation-delay:${i*0.02}s'>
+      const rowClass = (isNew && i === 0) ? 'new-row' : '';
+      return `<tr class='${rowClass}'>
         <td class='log-time'>${time}</td>
         <td><span class='log-domain'>${l.domain}</span></td>
         <td><span class='method-badge method-${l.method}'>${l.method}</span></td>
-        <td><span class='log-path' title='${l.path}'>${l.path}</span></td>
+        <td><span class='log-path' title='${l.path}'>${l.path || '/'}</span></td>
         <td><span class='${scClass}'>${sc}</span></td>
-        <td><span class='log-dur' style='color:${durColor}'>${l.duration_ms}ms</span></td>
-        <td style='color:var(--danger);font-size:0.78rem'>${l.error || ''}</td>
+        <td style='color:${durColor};font-family:monospace;font-size:0.8rem'>${l.duration_ms}ms</td>
+        <td style='color:var(--danger);font-size:0.75rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'>${l.error || ''}</td>
       </tr>`;
     }).join('');
+    if (isNew && document.getElementById('autoscroll').checked) {
+      tbody.firstElementChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
   }
 
-  async function clearLogs() {
-    if (!confirm('Effacer tous les logs ?')) return;
+  function clearLogs() {
     allLogs = [];
     renderLogs();
+    Toast.show('Logs vidés', 'info');
   }
 
-  // Live polling every 5 seconds
-  fetchLogs();
-  setInterval(fetchLogs, 5000);
+  initWS();
 </script>
 {% endblock %}

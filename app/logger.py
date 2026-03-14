@@ -1,8 +1,8 @@
-import json
 import time
 from collections import deque
 from dataclasses import dataclass, asdict
 from typing import Deque
+import asyncio
 
 MAX_LOGS = 200
 
@@ -17,13 +17,24 @@ class LogEntry:
     duration_ms: int
     error: str = ""
 
-# In-memory ring buffer (persists while server runs)
 _logs: Deque[LogEntry] = deque(maxlen=MAX_LOGS)
-_hits: dict = {}  # domain -> count
+_hits: dict = {}
+_broadcast_callback = None
+
+def set_broadcast_callback(cb):
+    global _broadcast_callback
+    _broadcast_callback = cb
 
 def add_log(entry: LogEntry):
     _logs.appendleft(entry)
     _hits[entry.domain] = _hits.get(entry.domain, 0) + 1
+    if _broadcast_callback:
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_running():
+                loop.create_task(_broadcast_callback(asdict(entry)))
+        except Exception:
+            pass
 
 def get_logs(limit: int = 50) -> list:
     return [asdict(e) for e in list(_logs)[:limit]]
